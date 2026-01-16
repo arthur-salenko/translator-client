@@ -32,9 +32,9 @@ final class TranslationsClientTest extends TestCase
 
         $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
 
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'token'), $guzzle);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translations()->upsert('ru', [
+        $res = $client->translationsAdmin()->upsert('ru', [
             new TranslationItem('common', 'sitename', 'Hello'),
         ]);
 
@@ -53,12 +53,12 @@ final class TranslationsClientTest extends TestCase
 
         $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
 
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'token'), $guzzle);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Unauthorized');
 
-        $client->translations()->upsert('ru', [
+        $client->translationsAdmin()->upsert('ru', [
             new TranslationItem('common', 'sitename', 'Hello'),
         ]);
     }
@@ -77,9 +77,9 @@ final class TranslationsClientTest extends TestCase
         ]);
 
         $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'token'), $guzzle);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translations()->revision();
+        $res = $client->translationsRead()->revision();
         self::assertSame('doncoupon_ru', $res['data']['brand_code']);
         self::assertSame('a1b2c3', $res['data']['effective_revision']);
     }
@@ -94,9 +94,9 @@ final class TranslationsClientTest extends TestCase
         ]);
 
         $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'token'), $guzzle);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translations()->show('common', 'sitename', 'ru');
+        $res = $client->translationsRead()->show('common', 'sitename', 'ru');
         self::assertSame('a1b2c3', $res->revision);
         self::assertSame('Hello', $res->value);
     }
@@ -108,9 +108,9 @@ final class TranslationsClientTest extends TestCase
         ]);
 
         $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'token'), $guzzle);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translations()->categoriesResponse(scope: 'merged', ifNoneMatch: 'W/"abc"');
+        $res = $client->translationsRead()->categoriesResponse(scope: 'merged', ifNoneMatch: 'W/"abc"');
         self::assertSame(304, $res->statusCode);
         self::assertSame('W/"abc"', $res->header('ETag'));
         self::assertNull($res->json);
@@ -130,9 +130,9 @@ final class TranslationsClientTest extends TestCase
         ]);
 
         $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'token'), $guzzle);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translations()->indexResponse(lang: 'ru');
+        $res = $client->translationsRead()->indexResponse(lang: 'ru');
         self::assertSame(200, $res->statusCode);
         self::assertSame('W/"xyz"', $res->header('ETag'));
         self::assertIsArray($res->json);

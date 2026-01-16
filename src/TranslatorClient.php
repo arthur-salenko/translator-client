@@ -26,8 +26,18 @@ final class TranslatorClient
         return new LanguagesClient($this->http);
     }
 
-    public function translations(): TranslationsClient
+    public function translationsRead(): TranslationsReadClient
     {
-        return new TranslationsClient($this->http);
+        return new TranslationsReadClient($this->http);
+    }
+
+    public function translationsAdmin(): TranslationsAdminClient
+    {
+        return new TranslationsAdminClient($this->http);
+    }
+
+    public function translations(): TranslationsReadClient
+    {
+        return $this->translationsRead();
     }
 }

@@ -21,7 +21,7 @@ use ArthurSalenko\TranslatorClient\TranslatorClient;
 
 $client = new TranslatorClient(new ClientConfig(
   baseUrl: 'https://translator.my-domain.tld',
-  token: 'YOUR_BEARER_TOKEN',
+  brandKey: 'YOUR_BRAND_KEY',
 ));
 
 // Health
@@ -31,7 +31,7 @@ $health = $client->health()->get();
 $languages = $client->languages()->index();
 
 // Upsert translations
-$result = $client->translations()->upsert(lang: 'ru', items: [
+$result = $client->translationsAdmin()->upsert(lang: 'ru', items: [
   new TranslationItem('common', 'sitename', 'Привет'),
 ]);
 ```
@@ -44,7 +44,7 @@ use ArthurSalenko\TranslatorClient\TranslatorClient;
 
 $config = new ClientConfig(
   baseUrl: 'https://translator.my-domain.tld',
-  token: 'YOUR_BEARER_TOKEN',
+  brandKey: 'YOUR_BRAND_KEY',
   timeoutSeconds: 10.0,
   connectTimeoutSeconds: 5.0,
   userAgent: 'my-app/1.0',
@@ -65,7 +65,7 @@ $guzzle = new GuzzleClient([
 ]);
 
 $client = new TranslatorClient(
-  new ClientConfig('https://translator.my-domain.tld', 'YOUR_BEARER_TOKEN'),
+  new ClientConfig('https://translator.my-domain.tld', 'YOUR_BRAND_KEY'),
   $guzzle,
 );
 ```
@@ -77,7 +77,7 @@ Unless specified explicitly, methods that accept `lang` default to `en`.
 ### Revisions
 
 ```php
-$revs = $client->translations()->revision();
+$revs = $client->translationsRead()->revision();
 ```
 
 ### Get translations (JSON + headers)
@@ -90,7 +90,7 @@ $revs = $client->translations()->revision();
 - `rawBody`
 
 ```php
-$response = $client->translations()->indexResponse(lang: 'ru');
+$response = $client->translationsRead()->indexResponse(lang: 'ru');
 
 if ($response->statusCode === 200) {
   $revision = $response->json['revision'] ?? null;
@@ -104,7 +104,7 @@ Service endpoints `categories` and `index` may return `304 Not Modified`.
 The SDK provides methods that return status + headers:
 
 ```php
-$response = $client->translations()->categoriesResponse(scope: 'merged', ifNoneMatch: $etag);
+$response = $client->translationsRead()->categoriesResponse(scope: 'merged', ifNoneMatch: $etag);
 
 if ($response->statusCode === 304) {
   // use cached response
@@ -118,7 +118,7 @@ if ($response->statusCode === 304) {
 Same pattern for `indexResponse()`:
 
 ```php
-$response = $client->translations()->indexResponse(
+$response = $client->translationsRead()->indexResponse(
   lang: 'ru',
   category: 'common',
   format: 'tree',
@@ -138,7 +138,7 @@ if ($response->statusCode === 304) {
 ### Get translation value
 
 ```php
-$value = $client->translations()->show(category: 'common', key: 'sitename');
+$value = $client->translationsRead()->show(category: 'common', key: 'sitename');
 // service response: { revision: string, value: mixed|null }
 ```
 
@@ -147,7 +147,7 @@ $value = $client->translations()->show(category: 'common', key: 'sitename');
 ```php
 use ArthurSalenko\TranslatorClient\Dto\TranslationItem;
 
-$res = $client->translations()->upsert(
+$res = $client->translationsAdmin()->upsert(
   lang: 'ru',
   items: [
     new TranslationItem('common', 'sitename', 'Hello'),
@@ -173,7 +173,7 @@ use ArthurSalenko\TranslatorClient\Exception\ApiException;
 use ArthurSalenko\TranslatorClient\Exception\NetworkException;
 
 try {
-  $client->translations()->upsert(lang: 'ru', items: [
+  $client->translationsAdmin()->upsert(lang: 'ru', items: [
     new TranslationItem('common', 'sitename', 'Hello'),
   ]);
 } catch (ApiException $e) {

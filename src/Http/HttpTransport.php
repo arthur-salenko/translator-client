@@ -73,6 +73,8 @@ final class HttpTransport
 
     public function request(string $method, string $path, array $query = [], ?array $json = null, array $headers = []): ResponseInterface
     {
+        $query = $this->applyBrandKey($query);
+
         $options = [
             'headers' => $this->buildHeaders($headers),
             'query' => $query,
@@ -139,7 +141,6 @@ final class HttpTransport
     {
         $base = [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $this->config->token,
         ];
 
         if ($this->config->userAgent !== null) {
@@ -151,5 +152,18 @@ final class HttpTransport
         }
 
         return $base;
+    }
+
+    private function applyBrandKey(array $query): array
+    {
+        if ($this->config->brandKey === null || $this->config->brandKey === '') {
+            return $query;
+        }
+
+        if (!array_key_exists('brand_key', $query)) {
+            $query['brand_key'] = $this->config->brandKey;
+        }
+
+        return $query;
     }
 }
