@@ -26,6 +26,11 @@ final class TranslatorClient
         return new LanguagesClient($this->http);
     }
 
+    public function brands(): BrandsClient
+    {
+        return new BrandsClient($this->http);
+    }
+
     public function translationsRead(): TranslationsReadClient
     {
         return new TranslationsReadClient($this->http);
@@ -34,6 +39,11 @@ final class TranslatorClient
     public function translationsAdmin(): TranslationsAdminClient
     {
         return new TranslationsAdminClient($this->http);
+    }
+
+    public function brandsAdmin(): BrandsAdminClient
+    {
+        return new BrandsAdminClient($this->http);
     }
 
     public function translations(): TranslationsReadClient

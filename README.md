@@ -30,10 +30,17 @@ $health = $client->health()->get();
 // Languages
 $languages = $client->languages()->index();
 
+// Brands
+$brands = $client->brands()->index();
+
 // Upsert translations
 $result = $client->translationsAdmin()->upsert(lang: 'ru', items: [
   new TranslationItem('common', 'sitename', 'Привет'),
 ]);
+
+// Create brand (admin)
+// Note: requires brandKey in ClientConfig, otherwise API responds with 401
+$newBrand = $client->brandsAdmin()->create(code: 'doncoupon_ua', name: 'Doncoupon UA');
 ```
 
 ### Configuration

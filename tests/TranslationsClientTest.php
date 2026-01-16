@@ -138,4 +138,53 @@ final class TranslationsClientTest extends TestCase
         self::assertIsArray($res->json);
         self::assertSame('a1b2c3', $res->json['revision']);
     }
+
+    public function testBrandsIndexReturnsArray(): void
+    {
+        $mock = new MockHandler([
+            new Response(200, ['Content-Type' => 'application/json'], json_encode([
+                'data' => [
+                    [
+                        'id' => 1,
+                        'code' => 'doncoupon_ru',
+                        'name' => 'Doncoupon RU',
+                        'is_enabled' => true,
+                        'created_at' => '2026-01-16T00:00:00Z',
+                        'updated_at' => '2026-01-16T00:00:00Z',
+                    ],
+                ],
+            ])),
+        ]);
+
+        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', null), $guzzle);
+
+        $res = $client->brands()->index();
+        self::assertIsArray($res);
+        self::assertSame('doncoupon_ru', $res['data'][0]['code']);
+    }
+
+    public function testBrandsAdminCreateReturnsBrandKey(): void
+    {
+        $mock = new MockHandler([
+            new Response(201, ['Content-Type' => 'application/json'], json_encode([
+                'data' => [
+                    'id' => 10,
+                    'code' => 'doncoupon_ua',
+                    'name' => 'Doncoupon UA',
+                    'brand_key' => 'secret',
+                    'is_enabled' => true,
+                    'created_at' => '2026-01-16T00:00:00Z',
+                    'updated_at' => '2026-01-16T00:00:00Z',
+                ],
+            ])),
+        ]);
+
+        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $client = new TranslatorClient(new ClientConfig('https://example.test', 'admin-brand-key'), $guzzle);
+
+        $res = $client->brandsAdmin()->create(code: 'doncoupon_ua', name: 'Doncoupon UA');
+        self::assertSame('doncoupon_ua', $res['data']['code']);
+        self::assertSame('secret', $res['data']['brand_key']);
+    }
 }
