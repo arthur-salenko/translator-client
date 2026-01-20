@@ -14,6 +14,19 @@ final class TranslationsAdminClient
     {
     }
 
+    public function index(string $lang = 'en', ?string $folder = null, string $scope = 'merged'): array
+    {
+        $query = [
+            'lang' => $lang,
+            'scope' => $scope,
+        ];
+        if ($folder !== null && $folder !== '') {
+            $query['folder'] = $folder;
+        }
+
+        return $this->http->requestJson('GET', '/v1/admin/translations', $query);
+    }
+
     /**
      * @param array<int,TranslationItem> $items
      */
@@ -31,5 +44,18 @@ final class TranslationsAdminClient
         ]);
 
         return UpsertResult::fromResponse($json);
+    }
+
+    public function delete(string $folder, string $key, string $target = 'brand'): array
+    {
+        $path = sprintf(
+            '/v1/admin/translations/%s/%s',
+            rawurlencode($folder),
+            rawurlencode($key),
+        );
+
+        return $this->http->requestJson('DELETE', $path, [
+            'target' => $target,
+        ]);
     }
 }

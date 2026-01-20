@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace ArthurSalenko\TranslatorClient;
 
-use GuzzleHttp\Client as GuzzleClient;
 use ArthurSalenko\TranslatorClient\Http\HttpTransport;
+use GuzzleHttp\Client as GuzzleClient;
 
 final class TranslatorClient
 {
@@ -31,23 +31,19 @@ final class TranslatorClient
         return new BrandsClient($this->http);
     }
 
-    public function translationsRead(): TranslationsReadClient
+    public function folders(): FoldersClient
     {
-        return new TranslationsReadClient($this->http);
-    }
-
-    public function translationsAdmin(): TranslationsAdminClient
-    {
-        return new TranslationsAdminClient($this->http);
-    }
-
-    public function brandsAdmin(): BrandsAdminClient
-    {
-        return new BrandsAdminClient($this->http);
+        return new FoldersClient($this->http);
     }
 
     public function translations(): TranslationsReadClient
     {
-        return $this->translationsRead();
+        return new TranslationsReadClient($this->http);
     }
+
+    public function admin(): AdminClient
+    {
+        return new AdminClient($this->http);
+    }
+
 }

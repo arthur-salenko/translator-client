@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace ArthurSalenko\TranslatorClient\Http;
 
+use ArthurSalenko\TranslatorClient\ClientConfig;
+use ArthurSalenko\TranslatorClient\Exception\ApiException;
+use ArthurSalenko\TranslatorClient\Exception\NetworkException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ConnectException;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
-use ArthurSalenko\TranslatorClient\ClientConfig;
-use ArthurSalenko\TranslatorClient\Exception\ApiException;
-use ArthurSalenko\TranslatorClient\Exception\NetworkException;
 use Psr\Http\Message\ResponseInterface;
 
 final class HttpTransport
@@ -31,7 +31,7 @@ final class HttpTransport
     {
         $response = $this->request($method, $path, $query, $json, $headers);
 
-        $body = (string) $response->getBody();
+        $body = (string)$response->getBody();
         if ($body === '') {
             return [];
         }
@@ -48,7 +48,7 @@ final class HttpTransport
     {
         $response = $this->request($method, $path, $query, $json, $headers);
 
-        $body = (string) $response->getBody();
+        $body = (string)$response->getBody();
         if ($body === '') {
             return new JsonResponse(
                 statusCode: $response->getStatusCode(),
@@ -73,7 +73,7 @@ final class HttpTransport
 
     public function request(string $method, string $path, array $query = [], ?array $json = null, array $headers = []): ResponseInterface
     {
-        $query = $this->applyBrandKey($query);
+        $headers = $this->applyBrandKeyHeader($headers);
 
         $options = [
             'headers' => $this->buildHeaders($headers),
@@ -87,54 +87,56 @@ final class HttpTransport
         try {
             $response = $this->client->request($method, ltrim($path, '/'), $options);
         } catch (ConnectException $e) {
-            throw new NetworkException($e->getMessage(), (int) $e->getCode(), $e);
+            throw new NetworkException($e->getMessage(), (int)$e->getCode(), $e);
         } catch (RequestException $e) {
             $resp = $e->getResponse();
             if ($resp !== null) {
-                $status = $resp->getStatusCode();
-                $body = (string) $resp->getBody();
-
-                $json = null;
-                if ($body !== '') {
-                    $decoded = json_decode($body, true);
-                    if (is_array($decoded)) {
-                        $json = $decoded;
-                    }
-                }
-
-                $message = 'Translator API error';
-                if (is_array($json) && isset($json['message']) && is_string($json['message'])) {
-                    $message = $json['message'];
-                }
-
-                throw new ApiException($message, $status, $body !== '' ? $body : null, $json, $e);
+                throw $this->buildApiExceptionFromResponse($resp, $e);
             }
 
-            throw new NetworkException($e->getMessage(), (int) $e->getCode(), $e);
+            throw new NetworkException($e->getMessage(), (int)$e->getCode(), $e);
         } catch (GuzzleException $e) {
-            throw new NetworkException($e->getMessage(), (int) $e->getCode(), $e);
+            throw new NetworkException($e->getMessage(), (int)$e->getCode(), $e);
         }
 
         $status = $response->getStatusCode();
         if ($status >= 400) {
-            $body = (string) $response->getBody();
-            $json = null;
-            if ($body !== '') {
-                $decoded = json_decode($body, true);
-                if (is_array($decoded)) {
-                    $json = $decoded;
-                }
-            }
-
-            $message = 'Translator API error';
-            if (is_array($json) && isset($json['message']) && is_string($json['message'])) {
-                $message = $json['message'];
-            }
-
-            throw new ApiException($message, $status, $body !== '' ? $body : null, $json);
+            throw $this->buildApiExceptionFromResponse($response, null);
         }
 
         return $response;
+    }
+
+    private function buildApiExceptionFromResponse(ResponseInterface $response, ?RequestException $exception): ApiException
+    {
+        $status = $response->getStatusCode();
+        $body = (string)$response->getBody();
+        $json = $this->decodeJsonOrNull($body);
+
+        $message = 'Translator API error';
+        if (is_array($json) && isset($json['message']) && is_string($json['message'])) {
+            $message = $json['message'];
+        }
+
+        if ($exception !== null) {
+            return new ApiException($message, $status, $body !== '' ? $body : null, $json, $exception);
+        }
+
+        return new ApiException($message, $status, $body !== '' ? $body : null, $json);
+    }
+
+    private function decodeJsonOrNull(string $body): ?array
+    {
+        if ($body === '') {
+            return null;
+        }
+
+        $decoded = json_decode($body, true);
+        if (!is_array($decoded)) {
+            return null;
+        }
+
+        return $decoded;
     }
 
     private function buildHeaders(array $headers): array
@@ -154,16 +156,16 @@ final class HttpTransport
         return $base;
     }
 
-    private function applyBrandKey(array $query): array
+    private function applyBrandKeyHeader(array $headers): array
     {
         if ($this->config->brandKey === null || $this->config->brandKey === '') {
-            return $query;
+            return $headers;
         }
 
-        if (!array_key_exists('brand_key', $query)) {
-            $query['brand_key'] = $this->config->brandKey;
+        if (!array_key_exists('X-Brand-Key', $headers)) {
+            $headers['X-Brand-Key'] = $this->config->brandKey;
         }
 
-        return $query;
+        return $headers;
     }
 }

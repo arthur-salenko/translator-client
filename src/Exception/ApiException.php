@@ -9,12 +9,13 @@ use RuntimeException;
 final class ApiException extends RuntimeException
 {
     public function __construct(
-        string $message,
-        public readonly int $statusCode,
+        string                  $message,
+        public readonly int     $statusCode,
         public readonly ?string $responseBody = null,
-        public readonly ?array $responseJson = null,
-        ?\Throwable $previous = null,
-    ) {
+        public readonly ?array  $responseJson = null,
+        ?\Throwable             $previous = null,
+    )
+    {
         parent::__construct($message, $statusCode, $previous);
     }
 }

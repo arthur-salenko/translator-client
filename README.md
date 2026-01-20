@@ -33,14 +33,17 @@ $languages = $client->languages()->index();
 // Brands
 $brands = $client->brands()->index();
 
+// Folders
+$folders = $client->folders()->index();
+
 // Upsert translations
-$result = $client->translationsAdmin()->upsert(lang: 'ru', items: [
+$result = $client->admin()->translations()->upsert(lang: 'ru', items: [
   new TranslationItem('common', 'sitename', 'Привет'),
 ]);
 
 // Create brand (admin)
 // Note: requires brandKey in ClientConfig, otherwise API responds with 401
-$newBrand = $client->brandsAdmin()->create(code: 'doncoupon_ua', name: 'Doncoupon UA');
+$newBrand = $client->admin()->brands()->create(code: 'doncoupon_ua', name: 'Doncoupon UA');
 ```
 
 ### Configuration
@@ -84,7 +87,7 @@ Unless specified explicitly, methods that accept `lang` default to `en`.
 ### Revisions
 
 ```php
-$revs = $client->translationsRead()->revision();
+$revs = $client->translations()->revision();
 ```
 
 ### Get translations (JSON + headers)
@@ -97,7 +100,7 @@ $revs = $client->translationsRead()->revision();
 - `rawBody`
 
 ```php
-$response = $client->translationsRead()->indexResponse(lang: 'ru');
+$response = $client->translations()->indexResponse(lang: 'ru');
 
 if ($response->statusCode === 200) {
   $revision = $response->json['revision'] ?? null;
@@ -105,29 +108,15 @@ if ($response->statusCode === 200) {
 }
 ```
 
-### Categories / Translations (ETag)
+### Translations (ETag)
 
-Service endpoints `categories` and `index` may return `304 Not Modified`.
+Service endpoint `index` may return `304 Not Modified`.
 The SDK provides methods that return status + headers:
 
 ```php
-$response = $client->translationsRead()->categoriesResponse(scope: 'merged', ifNoneMatch: $etag);
-
-if ($response->statusCode === 304) {
-  // use cached response
-} else {
-  $etag = $response->header('ETag');
-  $revision = $response->json['revision'] ?? null;
-  $categories = $response->json['data'] ?? [];
-}
-```
-
-Same pattern for `indexResponse()`:
-
-```php
-$response = $client->translationsRead()->indexResponse(
+$response = $client->translations()->indexResponse(
   lang: 'ru',
-  category: 'common',
+  folder: 'common',
   format: 'tree',
   scope: 'merged',
   ifNoneMatch: $etag,
@@ -145,7 +134,7 @@ if ($response->statusCode === 304) {
 ### Get translation value
 
 ```php
-$value = $client->translationsRead()->show(category: 'common', key: 'sitename');
+$value = $client->translations()->show(folder: 'common', key: 'sitename');
 // service response: { revision: string, value: mixed|null }
 ```
 
@@ -154,7 +143,7 @@ $value = $client->translationsRead()->show(category: 'common', key: 'sitename');
 ```php
 use ArthurSalenko\TranslatorClient\Dto\TranslationItem;
 
-$res = $client->translationsAdmin()->upsert(
+$res = $client->admin()->translations()->upsert(
   lang: 'ru',
   items: [
     new TranslationItem('common', 'sitename', 'Hello'),
@@ -180,7 +169,7 @@ use ArthurSalenko\TranslatorClient\Exception\ApiException;
 use ArthurSalenko\TranslatorClient\Exception\NetworkException;
 
 try {
-  $client->translationsAdmin()->upsert(lang: 'ru', items: [
+  $client->admin()->translations()->upsert(lang: 'ru', items: [
     new TranslationItem('common', 'sitename', 'Hello'),
   ]);
 } catch (ApiException $e) {

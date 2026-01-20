@@ -23,4 +23,22 @@ final class BrandsAdminClient
             'is_enabled' => $isEnabled,
         ]);
     }
+
+    /**
+     * @return array{data:array{id:int,code:string,name:?string,is_enabled:bool}}
+     */
+    public function update(string $code, ?string $name = null, ?bool $isEnabled = null): array
+    {
+        $path = sprintf('/v1/admin/brands/%s', rawurlencode($code));
+
+        $payload = [];
+        if ($name !== null) {
+            $payload['name'] = $name;
+        }
+        if ($isEnabled !== null) {
+            $payload['is_enabled'] = $isEnabled;
+        }
+
+        return $this->http->requestJson('PUT', $path, [], $payload);
+    }
 }

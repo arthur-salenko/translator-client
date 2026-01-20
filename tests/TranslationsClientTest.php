@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace ArthurSalenko\TranslatorClient\Tests;
 
-use GuzzleHttp\Client as GuzzleClient;
-use GuzzleHttp\Handler\MockHandler;
-use GuzzleHttp\HandlerStack;
-use GuzzleHttp\Psr7\Response;
 use ArthurSalenko\TranslatorClient\ClientConfig;
 use ArthurSalenko\TranslatorClient\Dto\TranslationItem;
 use ArthurSalenko\TranslatorClient\Exception\ApiException;
 use ArthurSalenko\TranslatorClient\TranslatorClient;
+use GuzzleHttp\Client as GuzzleClient;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\HandlerStack;
+use GuzzleHttp\Psr7\Response;
 use PHPUnit\Framework\TestCase;
 
 final class TranslationsClientTest extends TestCase
@@ -30,11 +30,20 @@ final class TranslationsClientTest extends TestCase
             ])),
         ]);
 
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(static function (callable $handler) {
+            return static function ($request, array $options) use ($handler) {
+                TestCase::assertSame('brand-key', $request->getHeaderLine('X-Brand-Key'));
+                TestCase::assertSame('', $request->getUri()->getQuery());
+                return $handler($request, $options);
+            };
+        });
+
+        $guzzle = new GuzzleClient(['handler' => $stack]);
 
         $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translationsAdmin()->upsert('ru', [
+        $res = $client->admin()->translations()->upsert('ru', [
             new TranslationItem('common', 'sitename', 'Hello'),
         ]);
 
@@ -51,14 +60,22 @@ final class TranslationsClientTest extends TestCase
             ])),
         ]);
 
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(static function (callable $handler) {
+            return static function ($request, array $options) use ($handler) {
+                TestCase::assertSame('brand-key', $request->getHeaderLine('X-Brand-Key'));
+                return $handler($request, $options);
+            };
+        });
+
+        $guzzle = new GuzzleClient(['handler' => $stack]);
 
         $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
         $this->expectException(ApiException::class);
         $this->expectExceptionMessage('Unauthorized');
 
-        $client->translationsAdmin()->upsert('ru', [
+        $client->admin()->translations()->upsert('ru', [
             new TranslationItem('common', 'sitename', 'Hello'),
         ]);
     }
@@ -76,10 +93,18 @@ final class TranslationsClientTest extends TestCase
             ])),
         ]);
 
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(static function (callable $handler) {
+            return static function ($request, array $options) use ($handler) {
+                TestCase::assertSame('brand-key', $request->getHeaderLine('X-Brand-Key'));
+                return $handler($request, $options);
+            };
+        });
+
+        $guzzle = new GuzzleClient(['handler' => $stack]);
         $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translationsRead()->revision();
+        $res = $client->translations()->revision();
         self::assertSame('doncoupon_ru', $res['data']['brand_code']);
         self::assertSame('a1b2c3', $res['data']['effective_revision']);
     }
@@ -93,27 +118,20 @@ final class TranslationsClientTest extends TestCase
             ])),
         ]);
 
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(static function (callable $handler) {
+            return static function ($request, array $options) use ($handler) {
+                TestCase::assertSame('brand-key', $request->getHeaderLine('X-Brand-Key'));
+                return $handler($request, $options);
+            };
+        });
+
+        $guzzle = new GuzzleClient(['handler' => $stack]);
         $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translationsRead()->show('common', 'sitename', 'ru');
+        $res = $client->translations()->show('common', 'sitename', 'ru');
         self::assertSame('a1b2c3', $res->revision);
         self::assertSame('Hello', $res->value);
-    }
-
-    public function testCategoriesResponseSupportsNotModified304(): void
-    {
-        $mock = new MockHandler([
-            new Response(304, ['ETag' => 'W/"abc"']),
-        ]);
-
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
-        $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
-
-        $res = $client->translationsRead()->categoriesResponse(scope: 'merged', ifNoneMatch: 'W/"abc"');
-        self::assertSame(304, $res->statusCode);
-        self::assertSame('W/"abc"', $res->header('ETag'));
-        self::assertNull($res->json);
     }
 
     public function testIndexResponseReturnsJsonAndEtag(): void
@@ -129,10 +147,18 @@ final class TranslationsClientTest extends TestCase
             ])),
         ]);
 
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(static function (callable $handler) {
+            return static function ($request, array $options) use ($handler) {
+                TestCase::assertSame('brand-key', $request->getHeaderLine('X-Brand-Key'));
+                return $handler($request, $options);
+            };
+        });
+
+        $guzzle = new GuzzleClient(['handler' => $stack]);
         $client = new TranslatorClient(new ClientConfig('https://example.test', 'brand-key'), $guzzle);
 
-        $res = $client->translationsRead()->indexResponse(lang: 'ru');
+        $res = $client->translations()->indexResponse(lang: 'ru');
         self::assertSame(200, $res->statusCode);
         self::assertSame('W/"xyz"', $res->header('ETag'));
         self::assertIsArray($res->json);
@@ -180,10 +206,18 @@ final class TranslationsClientTest extends TestCase
             ])),
         ]);
 
-        $guzzle = new GuzzleClient(['handler' => HandlerStack::create($mock)]);
+        $stack = HandlerStack::create($mock);
+        $stack->push(static function (callable $handler) {
+            return static function ($request, array $options) use ($handler) {
+                TestCase::assertSame('admin-brand-key', $request->getHeaderLine('X-Brand-Key'));
+                return $handler($request, $options);
+            };
+        });
+
+        $guzzle = new GuzzleClient(['handler' => $stack]);
         $client = new TranslatorClient(new ClientConfig('https://example.test', 'admin-brand-key'), $guzzle);
 
-        $res = $client->brandsAdmin()->create(code: 'doncoupon_ua', name: 'Doncoupon UA');
+        $res = $client->admin()->brands()->create(code: 'doncoupon_ua', name: 'Doncoupon UA');
         self::assertSame('doncoupon_ua', $res['data']['code']);
         self::assertSame('secret', $res['data']['brand_key']);
     }

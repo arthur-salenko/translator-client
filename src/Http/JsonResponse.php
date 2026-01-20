@@ -11,11 +11,12 @@ final class JsonResponse
      * @param array<string, mixed>|list<mixed>|null $json
      */
     public function __construct(
-        public readonly int $statusCode,
-        public readonly array $headers,
-        public readonly ?array $json,
+        public readonly int     $statusCode,
+        public readonly array   $headers,
+        public readonly ?array  $json,
         public readonly ?string $rawBody,
-    ) {
+    )
+    {
     }
 
     public function header(string $name): ?string

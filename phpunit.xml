@@ -4,9 +4,9 @@
          bootstrap="vendor/autoload.php"
          cacheDirectory=".phpunit.cache"
          colors="true">
-  <testsuites>
-    <testsuite name="Translator Client">
-      <directory>tests</directory>
-    </testsuite>
-  </testsuites>
+    <testsuites>
+        <testsuite name="Translator Client">
+            <directory>tests</directory>
+        </testsuite>
+    </testsuites>
 </phpunit>
