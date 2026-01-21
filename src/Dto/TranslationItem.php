@@ -6,10 +6,13 @@ namespace ArthurSalenko\TranslatorClient\Dto;
 
 final class TranslationItem
 {
+    /**
+     * @param array<string, string|null> $values
+     */
     public function __construct(
         public readonly string  $folder,
         public readonly string  $key,
-        public readonly ?string $value,
+        public readonly array   $values,
         public readonly ?string $note = null,
     )
     {
@@ -20,7 +23,7 @@ final class TranslationItem
         return [
             'folder' => $this->folder,
             'key' => $this->key,
-            'value' => $this->value,
+            'values' => $this->values,
             'note' => $this->note,
         ];
     }

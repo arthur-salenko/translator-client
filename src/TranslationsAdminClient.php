@@ -30,7 +30,7 @@ final class TranslationsAdminClient
     /**
      * @param array<int,TranslationItem> $items
      */
-    public function upsert(string $lang = 'en', array $items, string $target = 'brand'): UpsertResult
+    public function upsert(array $items, string $target = 'brand'): UpsertResult
     {
         $payloadItems = [];
         foreach ($items as $item) {
@@ -38,7 +38,6 @@ final class TranslationsAdminClient
         }
 
         $json = $this->http->requestJson('PUT', '/v1/admin/translations', [], [
-            'lang' => $lang,
             'target' => $target,
             'items' => $payloadItems,
         ]);

@@ -37,8 +37,8 @@ $brands = $client->brands()->index();
 $folders = $client->folders()->index();
 
 // Upsert translations
-$result = $client->admin()->translations()->upsert(lang: 'ru', items: [
-  new TranslationItem('common', 'sitename', 'Привет'),
+$result = $client->admin()->translations()->upsert(items: [
+  new TranslationItem('common', 'sitename', ['en' => 'Hello', 'ru' => 'Привет']),
 ]);
 
 // Create brand (admin)
@@ -82,7 +82,7 @@ $client = new TranslatorClient(
 
 ## Translations API
 
-Unless specified explicitly, methods that accept `lang` default to `en`.
+Unless specified explicitly, read methods that accept `lang` default to `en`.
 
 ### Revisions
 
@@ -144,10 +144,8 @@ $value = $client->translations()->show(folder: 'common', key: 'sitename');
 use ArthurSalenko\TranslatorClient\Dto\TranslationItem;
 
 $res = $client->admin()->translations()->upsert(
-  lang: 'ru',
   items: [
-    new TranslationItem('common', 'sitename', 'Hello'),
-    new TranslationItem('common', 'title', 'Title'),
+    new TranslationItem('common', 'sitename', ['en' => 'Hello', 'ru' => 'Привет']),
   ],
   target: 'brand',
 );
@@ -169,8 +167,8 @@ use ArthurSalenko\TranslatorClient\Exception\ApiException;
 use ArthurSalenko\TranslatorClient\Exception\NetworkException;
 
 try {
-  $client->admin()->translations()->upsert(lang: 'ru', items: [
-    new TranslationItem('common', 'sitename', 'Hello'),
+  $client->admin()->translations()->upsert(items: [
+    new TranslationItem('common', 'sitename', ['en' => 'Hello', 'ru' => 'Привет']),
   ]);
 } catch (ApiException $e) {
   $status = $e->statusCode;
