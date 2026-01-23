@@ -20,11 +20,16 @@ final class TranslationItem
 
     public function toArray(): array
     {
-        return [
+        $out = [
             'folder' => $this->folder,
             'key' => $this->key,
             'values' => $this->values,
-            'note' => $this->note,
         ];
+
+        if ($this->note !== null) {
+            $out['note'] = $this->note === '' ? null : $this->note;
+        }
+
+        return $out;
     }
 }
